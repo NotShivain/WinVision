@@ -8,6 +8,7 @@ import seaborn as sns
 import plotly.express as px
 import numpy as np
 import requests
+import pickle
 
 circuits = pd.read_csv(r"archive\circuits.csv")
 constructor_results = pd.read_csv(r"archive\constructor_results.csv")
@@ -15,6 +16,7 @@ constructor_standings = pd.read_csv(r"archive\constructor_standings.csv")
 constructors = pd.read_csv(r"archive\constructors.csv")
 driver_standings = pd.read_csv(r"archive\driver_standings.csv")
 drivers = pd.read_csv(r"archive\drivers.csv")
+drivers['Name'] = drivers['forename'] + ' ' + drivers['surname']
 lap_times = pd.read_csv(r"archive\lap_times.csv")
 pit_stops = pd.read_csv(r"archive\pit_stops.csv")
 qualifying = pd.read_csv(r"archive\qualifying.csv")
@@ -23,8 +25,33 @@ results = pd.read_csv(r"archive\results.csv")
 seasons = pd.read_csv(r"archive\seasons.csv")
 sprint_results = pd.read_csv(r"archive\sprint_results.csv")
 status = pd.read_csv(r"archive\status.csv")
+winvision = pd.read_csv(r"winvision.csv")
+model=pickle.load(open('winvision_model.pkl','rb'))
+def prediction(driver_name, grid, circuit_loc):
+    driver = drivers.loc[drivers['Name']==driver_name, 'driverId'].iloc[0]
+    circuit = circuits.loc[circuits['location']==circuit_loc, ['circuitId']].iloc[0]
 
+    input_data = winvision[winvision['driverId'] == driver].sort_values(by='date', ascending=False).iloc[0]
+    circuit_data = circuits[circuits['location']==circuit_loc].iloc[0]
 
+    features = {
+        'driverId': input_data['driverId'],
+        'constructorId': input_data['constructorId'],
+        'grid': grid,
+        'laps': input_data['laps'],
+        'circuitId': circuit_data['circuitId'],
+        'Constructor Experience': input_data['Constructor Experience'],
+        'Driver Experience': input_data['Driver Experience'],
+        'age': input_data['age'],
+        'driver_wins': input_data['driver_wins'],
+        'constructor_wins': input_data['constructor_wins'],
+        'prev_position': input_data['prev_position'],
+        'Driver Constructor Experience': input_data['Driver Constructor Experience'],
+        'DNF Score': input_data['DNF Score']
+        
+    }
+    features = pd.DataFrame([features])
+    return model.predict(features), model.predict_proba(features)
 def loading_animation():
     st.markdown(
          f"""
@@ -53,6 +80,8 @@ def loading_animation():
         time.sleep(3)
         st.success("Loading complete!")
         main_page()
+
+
 
 def main_page():
     selected_driver = st.sidebar.selectbox("Select Driver", drivers["forename"] + " " + drivers["surname"])
@@ -171,4 +200,64 @@ def main_page():
         )
         fig_driver_standings.update_layout(width=1000, height=500) 
         st.plotly_chart(fig_driver_standings)
+    
+    
+    
+    drivers_list = [
+    'George Russell', 'Lando Norris', 'Oscar Piastri', 'Daniel Ricciardo', 
+    'Fernando Alonso', 'Lewis Hamilton', 'Yuki Tsunoda', 'Lance Stroll', 
+    'Alexander Albon', 'Charles Leclerc', 'Carlos Sainz', 'Logan Sargeant', 
+    'Kevin Magnussen', 'Pierre Gasly', 'Sergio Pérez', 'Valtteri Bottas', 
+    'Esteban Ocon', 'Max Verstappen', 'Nico Hülkenberg']
+    circuit_loc = 'Montreal'
+
+# Title of the app
+    st.title("Formula 1 Drivers Winning Probability Prediction")
+
+# Initialize session state for selected drivers
+    if 'selected_drivers' not in st.session_state:
+        st.session_state.selected_drivers = []
+
+# Dropdown for driver selection
+    driver = st.selectbox("Select a driver to add to the list:", drivers_list)
+
+# Button to add the driver to the list
+    if st.button("Add Driver"):
+        if driver not in st.session_state.selected_drivers:
+            st.session_state.selected_drivers.append(driver)
+        else:
+            st.warning("Driver already added!")
+
+# Display the selected drivers
+    st.write("Selected Drivers:")
+    for i, driver in enumerate(st.session_state.selected_drivers):
+        st.write(f"{i + 1}: {driver}")
+
+# Ensure all drivers are added before making predictions
+    if len(st.session_state.selected_drivers) == len(drivers_list):
+    # Button to predict winning probabilities
+        if st.button("Predict Winning Probabilities"):
+            predictions = []
+
+        # Collect input data and make predictions
+            for grid, driver_name in enumerate(st.session_state.selected_drivers, start=1):
+                pred, prob = prediction(driver_name, grid, circuit_loc)
+                if pred in [1, 2, 3]:
+                    predictions.append({
+                    'Driver Name': driver_name,
+                    'Grid': grid,
+                    'Prediction': pred,
+                    'Probability': np.max(prob) * 100
+                })
+
+        # Display the predictions
+            if predictions:
+                st.write("Predictions for Top 3 Positions:")
+                for pred in predictions:
+                    st.write(f"Driver: {pred['Driver Name']}, Grid: {pred['Grid']}, Prediction: {pred['Prediction']}, Probability: {pred['Probability']:.2f}%")
+            else:
+                st.write("No drivers predicted to finish in the top 3 positions.")
+    else:
+        st.write(f"Please add {len(drivers_list) - len(st.session_state.selected_drivers)} more drivers.")
+    
 loading_animation()
