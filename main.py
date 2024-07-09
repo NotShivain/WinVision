@@ -215,7 +215,7 @@ def main_page():
 # Initialize session state for selected drivers
     if 'selected_drivers' not in st.session_state:
         st.session_state.selected_drivers = []
-    circuit_loc = st.selectbox("Please select a circuit location: ",circuits_list)
+    circuit_loc = "Sakhir"
     driver = st.selectbox("Select a driver to add to the list (according to the grid position):", drivers_list)
 
     if st.button("Add Driver"):
