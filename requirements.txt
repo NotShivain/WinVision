@@ -6,4 +6,4 @@ requests
 seaborn
 streamlit
 streamlit-lottie
-sklearn
+scikit-learn
