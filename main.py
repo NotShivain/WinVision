@@ -1,6 +1,5 @@
 import pandas as pd
 import streamlit as st
-from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
 from streamlit_lottie import st_lottie
 import time
