@@ -208,26 +208,22 @@ def main_page():
     'Alexander Albon', 'Charles Leclerc', 'Carlos Sainz', 'Logan Sargeant', 
     'Kevin Magnussen', 'Pierre Gasly', 'Sergio Pérez', 'Valtteri Bottas', 
     'Esteban Ocon', 'Max Verstappen', 'Nico Hülkenberg']
-    circuit_loc = 'Montreal'
+    circuits_list = circuits["location"]
 
-# Title of the app
     st.title("Formula 1 Drivers Winning Probability Prediction")
 
 # Initialize session state for selected drivers
     if 'selected_drivers' not in st.session_state:
         st.session_state.selected_drivers = []
+    circuit_loc = st.selectbox("Please select a circuit location: ",circuits_list)
+    driver = st.selectbox("Select a driver to add to the list (according to the grid position):", drivers_list)
 
-# Dropdown for driver selection
-    driver = st.selectbox("Select a driver to add to the list:", drivers_list)
-
-# Button to add the driver to the list
     if st.button("Add Driver"):
         if driver not in st.session_state.selected_drivers:
             st.session_state.selected_drivers.append(driver)
         else:
             st.warning("Driver already added!")
 
-# Display the selected drivers
     st.write("Selected Drivers:")
     for i, driver in enumerate(st.session_state.selected_drivers):
         st.write(f"{i + 1}: {driver}")
