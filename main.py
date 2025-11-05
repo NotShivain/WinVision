@@ -71,7 +71,7 @@ def loading_animation():
     with st.expander("Description"):
         st.info("""Start your engines and rev up your analysis at WinVision! Set the parameters for your Formula 1 data ride and let the checkered flag drop on insights as fast as a pit stop.""")
     with st.expander("Team WinVision"):
-        st.info("""Shivain Singh, Parth Passi, Daksh Rawat, Agneya Mishra""")
+        st.info("""Shivain Singh, Parth Passi""")
     img = st_lottie("https://lottie.host/3248f1e9-c2c3-4f14-b793-92ff84a0b25b/xugqbfeSMP.json")
     
     st.write("Loading...")
@@ -200,59 +200,7 @@ def main_page():
         fig_driver_standings.update_layout(width=1000, height=500) 
         st.plotly_chart(fig_driver_standings)
     
-    
-    
-    drivers_list = [
-    'George Russell', 'Lando Norris', 'Oscar Piastri', 'Daniel Ricciardo', 
-    'Fernando Alonso', 'Lewis Hamilton', 'Yuki Tsunoda', 'Lance Stroll', 
-    'Alexander Albon', 'Charles Leclerc', 'Carlos Sainz', 'Logan Sargeant', 
-    'Kevin Magnussen', 'Pierre Gasly', 'Sergio Pérez', 'Valtteri Bottas', 
-    'Esteban Ocon', 'Max Verstappen', 'Nico Hülkenberg']
-    circuits_list = circuits["location"]
 
-    st.title("Formula 1 Drivers Winning Probability Prediction")
 
-# Initialize session state for selected drivers
-    if 'selected_drivers' not in st.session_state:
-        st.session_state.selected_drivers = []
-    circuit_loc = "Sakhir"
-    driver = st.selectbox("Select a driver to add to the list (according to the grid position):", drivers_list)
-
-    if st.button("Add Driver"):
-        if driver not in st.session_state.selected_drivers:
-            st.session_state.selected_drivers.append(driver)
-        else:
-            st.warning("Driver already added!")
-
-    st.write("Selected Drivers:")
-    for i, driver in enumerate(st.session_state.selected_drivers):
-        st.write(f"{i + 1}: {driver}")
-
-# Ensure all drivers are added before making predictions
-    if len(st.session_state.selected_drivers) == len(drivers_list):
-    # Button to predict winning probabilities
-        if st.button("Predict Winning Probabilities"):
-            predictions = []
-
-        # Collect input data and make predictions
-            for grid, driver_name in enumerate(st.session_state.selected_drivers, start=1):
-                pred, prob = prediction(driver_name, grid, circuit_loc)
-                if pred in [1, 2, 3]:
-                    predictions.append({
-                    'Driver Name': driver_name,
-                    'Grid': grid,
-                    'Prediction': pred,
-                    'Probability': np.max(prob) * 100
-                })
-
-        # Display the predictions
-            if predictions:
-                st.write("Predictions for Top 3 Positions:")
-                for pred in predictions:
-                    st.write(f"Driver: {pred['Driver Name']}, Grid: {pred['Grid']}, Prediction: {pred['Prediction']}, Probability: {pred['Probability']:.2f}%")
-            else:
-                st.write("No drivers predicted to finish in the top 3 positions.")
-    else:
-        st.write(f"Please add {len(drivers_list) - len(st.session_state.selected_drivers)} more drivers.")
     
 loading_animation()
